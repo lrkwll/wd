@@ -70,16 +70,28 @@
     //   html: function taking the property value, returning embed HTML
     var EMBED_CONFIGS = [
         {
-            property: 'P3040',
-            label: 'SoundCloud',
+            property: 'P1651',
+            label: 'YouTube (video)',
             html: function (id) {
-                var profileUrl = encodeURIComponent('https://soundcloud.com/' + id);
-                return '<iframe width="100%" height="300" scrolling="no" frameborder="no"' +
-                    ' allow="autoplay"' +
-                    ' src="https://w.soundcloud.com/player/?url=' + profileUrl +
-                    '&color=%23ff5500&auto_play=false&hide_related=false' +
-                    '&show_comments=true&show_user=true&show_reposts=false&show_teaser=true&visual=true">' +
-                    '</iframe>';
+                var watchUrl = 'https://www.youtube.com/watch?v=' + encodeURIComponent(id);
+                return '<iframe width="560" height="315"' +
+                    ' src="https://www.youtube.com/embed/' + encodeURIComponent(id) + '"' +
+                    ' frameborder="0"' +
+                    ' allowfullscreen></iframe>' +
+                    '<div class="watch-link"><a href="' + watchUrl + '" target="_blank">Watch on YouTube</a></div>';
+            }
+        },
+        {
+            property: 'P2397',
+            label: 'YouTube (channel uploads playlist)',
+            html: function (id) {
+                var playlistId = id.replace(/^UC/, 'UU');
+                var channelUrl = 'https://www.youtube.com/channel/' + encodeURIComponent(id) + '/videos';
+                return '<iframe width="560" height="315"' +
+                    ' src="https://www.youtube.com/embed/videoseries?list=' + encodeURIComponent(playlistId) + '"' +
+                    ' frameborder="0"' +
+                    ' allowfullscreen></iframe>' +
+                    '<div class="watch-link"><a href="' + channelUrl + '" target="_blank">View channel on YouTube</a></div>';
             }
         },
         {
@@ -103,11 +115,11 @@
             }
         },
         {
-            property: 'P8704',
-            label: 'Spotify (playlist)',
+            property: 'P2207',
+            label: 'Spotify (track)',
             html: function (id) {
-                return '<iframe src="https://open.spotify.com/embed/playlist/' + encodeURIComponent(id) + '"' +
-                    ' width="100%" height="352" frameborder="0"' +
+                return '<iframe src="https://open.spotify.com/embed/track/' + encodeURIComponent(id) + '"' +
+                    ' width="100%" height="152" frameborder="0"' +
                     ' style="border-radius:12px"' +
                     ' allowfullscreen></iframe>';
             }
@@ -123,40 +135,58 @@
             }
         },
         {
-            property: 'P2207',
-            label: 'Spotify (track)',
+            property: 'P8704',
+            label: 'Spotify (playlist)',
             html: function (id) {
-                return '<iframe src="https://open.spotify.com/embed/track/' + encodeURIComponent(id) + '"' +
-                    ' width="100%" height="152" frameborder="0"' +
+                return '<iframe src="https://open.spotify.com/embed/playlist/' + encodeURIComponent(id) + '"' +
+                    ' width="100%" height="352" frameborder="0"' +
                     ' style="border-radius:12px"' +
                     ' allowfullscreen></iframe>';
             }
         },
         {
-            property: 'P2397',
-            label: 'YouTube (channel uploads playlist)',
+            property: 'P3040',
+            label: 'SoundCloud',
             html: function (id) {
-                var playlistId = id.replace(/^UC/, 'UU');
-                var channelUrl = 'https://www.youtube.com/channel/' + encodeURIComponent(id) + '/videos';
-                return '<iframe width="560" height="315"' +
-                    ' src="https://www.youtube.com/embed/videoseries?list=' + encodeURIComponent(playlistId) + '"' +
-                    ' frameborder="0"' +
-                    ' allowfullscreen></iframe>' +
-                    '<div class="watch-link"><a href="' + channelUrl + '" target="_blank">View channel on YouTube</a></div>';
+                var profileUrl = encodeURIComponent('https://soundcloud.com/' + id);
+                return '<iframe width="100%" height="300" scrolling="no" frameborder="no"' +
+                    ' allow="autoplay"' +
+                    ' src="https://w.soundcloud.com/player/?url=' + profileUrl +
+                    '&color=%23ff5500&auto_play=false&hide_related=false' +
+                    '&show_comments=true&show_user=true&show_reposts=false&show_teaser=true&visual=true">' +
+                    '</iframe>';
             }
         },
         {
-            property: 'P1651',
-            label: 'YouTube (video)',
+            property: 'P2722',
+            label: 'Deezer (artist)',
             html: function (id) {
-                var watchUrl = 'https://www.youtube.com/watch?v=' + encodeURIComponent(id);
-                return '<iframe width="560" height="315"' +
-                    ' src="https://www.youtube.com/embed/' + encodeURIComponent(id) + '"' +
-                    ' frameborder="0"' +
-                    ' allowfullscreen></iframe>' +
-                    '<div class="watch-link"><a href="' + watchUrl + '" target="_blank">Watch on YouTube</a></div>';
+                return '<iframe src="https://widget.deezer.com/widget/dark/artist/' + encodeURIComponent(id) + '"' +
+                    ' width="100%" height="350" frameborder="0"' +
+                    ' style="border-radius:10px"' +
+                    ' allowfullscreen></iframe>';
             }
         },
+        {
+            property: 'P2723',
+            label: 'Deezer (album)',
+            html: function (id) {
+                return '<iframe src="https://widget.deezer.com/widget/dark/album/' + encodeURIComponent(id) + '"' +
+                    ' width="100%" height="350" frameborder="0"' +
+                    ' style="border-radius:10px"' +
+                    ' allowfullscreen></iframe>';
+            }
+        },
+        {
+            property: 'P3853',
+            label: 'Deezer (track)',
+            html: function (id) {
+                return '<iframe src="https://widget.deezer.com/widget/dark/track/' + encodeURIComponent(id) + '"' +
+                    ' width="100%" height="150" frameborder="0"' +
+                    ' style="border-radius:10px"' +
+                    ' allowfullscreen></iframe>';
+            }
+        }
         // ---- Add more embed types here ----
         // Example:
         // {
