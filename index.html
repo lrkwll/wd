@@ -70,6 +70,17 @@
     //   html: function taking the property value, returning embed HTML
     var EMBED_CONFIGS = [
         {
+            property: 'P6276',
+            label: 'Amazon Music (artist)
+            html: function (id) {
+                return '<iframe id="AmazonMusicEmbed" src="https://music.amazon.com/embed/' + encodeURIComponent(id) + '' +
+                    ' width="100%" height="352" frameborder="0"' +
+                    ' style="border-radius:12px"' +
+                    ' allowfullscreen></iframe>';
+            }
+        },
+
+        {
             property: 'P3040',
             label: 'SoundCloud',
             html: function (id) {
