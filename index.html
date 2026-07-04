@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Wikidata Embeds</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 24px;
+            background: #f8f8f8;
+            font-family: sans-serif;
+            box-sizing: border-box;
+        }
+        h1 {
+            font-size: 22px;
+            margin: 0 0 6px;
+            color: #222;
+        }
+        #entity-id {
+            font-size: 13px;
+            color: #888;
+            margin: 0 0 24px;
+        }
+        #entity-id a {
+            color: #36c;
+        }
+        .section {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+            margin-bottom: 24px;
+        }
+        .section h2 {
+            font-size: 13px;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 0 0 12px;
+        }
+        .watch-link {
+            margin-top: 6px;
+            font-size: 13px;
+        }
+        .watch-link a {
+            color: #36c;
+        }
+        #status {
+            color: #555;
+            font-style: italic;
+        }
+        #error {
+            color: #c00;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="title">Loading…</h1>
+    <p id="entity-id"></p>
+    <p id="status"></p>
+    <p id="error" style="display:none"></p>
+    <div id="embeds"></div>
+
+    <script>
+    // ---- Configure embed types here ----
+    // Each entry needs:
+    //   property: Wikidata property ID
+    //   label: human-readable name shown as a heading
+    //   html: function taking the property value, returning embed HTML
+    var EMBED_CONFIGS = [
+        {
+            property: 'P1651',
+            label: 'YouTube (video)',
+            html: function (id) {
+                var watchUrl = 'https://www.youtube.com/watch?v=' + encodeURIComponent(id);
+                return '<iframe width="560" height="315"' +
+                    ' src="https://www.youtube.com/embed/' + encodeURIComponent(id) + '"' +
+                    ' frameborder="0"' +
+                    ' allowfullscreen></iframe>' +
+                    '<div class="watch-link"><a href="' + watchUrl + '" target="_blank">Watch on YouTube</a></div>';
+            }
+        },
+        {
+            property: 'P2397',
+            label: 'YouTube (channel uploads playlist)',
+            html: function (id) {
+                var playlistId = id.replace(/^UC/, 'UU');
+                var channelUrl = 'https://www.youtube.com/channel/' + encodeURIComponent(id) + '/videos';
+                return '<iframe width="560" height="315"' +
+                    ' src="https://www.youtube.com/embed/videoseries?list=' + encodeURIComponent(playlistId) + '"' +
+                    ' frameborder="0"' +
+                    ' allowfullscreen></iframe>' +
+                    '<div class="watch-link"><a href="' + channelUrl + '" target="_blank">View channel on YouTube</a></div>';
+            }
+        },
+        {
+            property: 'P1902',
+            label: 'Spotify (artist)',
+            html: function (id) {
+                return '<iframe src="https://open.spotify.com/embed/artist/' + encodeURIComponent(id) + '"' +
+                    ' width="100%" height="352" frameborder="0"' +
+                    ' style="border-radius:12px"' +
+                    ' allowfullscreen></iframe>';
+            }
+        },
+        {
+            property: 'P2205',
+            label: 'Spotify (album)',
+            html: function (id) {
+                return '<iframe src="https://open.spotify.com/embed/album/' + encodeURIComponent(id) + '"' +
+                    ' width="100%" height="352" frameborder="0"' +
+                    ' style="border-radius:12px"' +
+                    ' allowfullscreen></iframe>';
+            }
+        },
+        {
+            property: 'P2207',
+            label: 'Spotify (track)',
+            html: function (id) {
+                return '<iframe src="https://open.spotify.com/embed/track/' + encodeURIComponent(id) + '"' +
+                    ' width="100%" height="152" frameborder="0"' +
+                    ' style="border-radius:12px"' +
+                    ' allowfullscreen></iframe>';
+            }
+        },
+        {
+            property: 'P5916',
+            label: 'Spotify (podcast)',
+            html: function (id) {
+                return '<iframe src="https://open.spotify.com/embed/show/' + encodeURIComponent(id) + '"' +
+                    ' width="100%" height="352" frameborder="0"' +
+                    ' style="border-radius:12px"' +
+                    ' allowfullscreen></iframe>';
+            }
+        },
+        {
+            property: 'P8704',
+            label: 'Spotify (playlist)',
+            html: function (id) {
+                return '<iframe src="https://open.spotify.com/embed/playlist/' + encodeURIComponent(id) + '"' +
+                    ' width="100%" height="352" frameborder="0"' +
+                    ' style="border-radius:12px"' +
+                    ' allowfullscreen></iframe>';
+            }
+        },
+        {
+            property: 'P3040',
+            label: 'SoundCloud',
+            html: function (id) {
+                var profileUrl = encodeURIComponent('https://soundcloud.com/' + id);
+                return '<iframe width="100%" height="300" scrolling="no" frameborder="no"' +
+                    ' allow="autoplay"' +
+                    ' src="https://w.soundcloud.com/player/?url=' + profileUrl +
+                    '&color=%23ff5500&auto_play=false&hide_related=false' +
+                    '&show_comments=true&show_user=true&show_reposts=false&show_teaser=true&visual=true">' +
+                    '</iframe>';
+            }
+        },
+        {
+            property: 'P2722',
+            label: 'Deezer (artist)',
+            html: function (id) {
+                return '<iframe src="https://widget.deezer.com/widget/dark/artist/' + encodeURIComponent(id) + '"' +
+                    ' width="100%" height="350" frameborder="0"' +
+                    ' style="border-radius:10px"' +
+                    ' allowfullscreen></iframe>';
+            }
+        },
+        {
+            property: 'P2723',
+            label: 'Deezer (album)',
+            html: function (id) {
+                return '<iframe src="https://widget.deezer.com/widget/dark/album/' + encodeURIComponent(id) + '"' +
+                    ' width="100%" height="350" frameborder="0"' +
+                    ' style="border-radius:10px"' +
+                    ' allowfullscreen></iframe>';
+            }
+        },
+        {
+            property: 'P3853',
+            label: 'Deezer (track)',
+            html: function (id) {
+                return '<iframe src="https://widget.deezer.com/widget/dark/track/' + encodeURIComponent(id) + '"' +
+                    ' width="100%" height="150" frameborder="0"' +
+                    ' style="border-radius:10px"' +
+                    ' allowfullscreen></iframe>';
+            }
+        }
+        // ---- Add more embed types here ----
+        // Example:
+        // {
+        //     property: 'PXXXX',
+        //     label: 'Service name',
+        //     html: function (id) {
+        //         return '<iframe src="https://example.com/embed/' + encodeURIComponent(id) + '"' +
+        //             ' width="100%" height="352" frameborder="0"></iframe>';
+        //     }
+        // },
+    ];
+    // ------------------------------------
+
+    function setStatus(msg) {
+        document.getElementById('status').textContent = msg;
+    }
+
+    function setError(msg) {
+        var el = document.getElementById('error');
+        el.textContent = msg;
+        el.style.display = '';
+        document.getElementById('status').textContent = '';
+    }
+
+    function getParam(name) {
+        var match = location.search.match(new RegExp('[?&]' + name + '=([^&]+)'));
+        return match ? decodeURIComponent(match[1]) : null;
+    }
+
+    var entityId = getParam('q');
+    if (!entityId || !entityId.match(/^Q\d+$/)) {
+        document.getElementById('title').textContent = 'Wikidata Embeds';
+        setError('No valid Wikidata item ID provided. Use this page via the bookmarklet on a Wikidata or Wikipedia page.');
+        document.getElementById('entity-id').style.display = 'none';
+    } else {
+        document.getElementById('entity-id').innerHTML =
+            '<a href="https://www.wikidata.org/wiki/' + entityId + '" target="_blank">' + entityId + '</a>';
+        setStatus('Fetching data…');
+
+        var claimsUrl = 'https://www.wikidata.org/w/api.php?action=wbgetclaims' +
+            '&entity=' + entityId + '&format=json&origin=*';
+        var labelUrl = 'https://www.wikidata.org/w/api.php?action=wbgetentities' +
+            '&ids=' + entityId + '&props=labels&languages=en&format=json&origin=*';
+
+        Promise.all([
+            fetch(claimsUrl).then(function (r) { return r.json(); }),
+            fetch(labelUrl).then(function (r) { return r.json(); })
+        ])
+        .then(function (results) {
+            var claimsData = results[0];
+            var labelData = results[1];
+
+            var label = entityId;
+            try {
+                label = labelData.entities[entityId].labels.en.value || entityId;
+            } catch (e) {}
+
+            document.getElementById('title').textContent = label;
+            document.title = label + ' \u2014 Wikidata Embeds';
+
+            var embeds = document.getElementById('embeds');
+            var found = 0;
+
+            EMBED_CONFIGS.forEach(function (config) {
+                var claims = claimsData.claims && claimsData.claims[config.property];
+                if (!claims || !claims.length) {
+                    return;
+                }
+                claims.forEach(function (claim) {
+                    if (!claim.mainsnak || !claim.mainsnak.datavalue) {
+                        return;
+                    }
+                    var value = claim.mainsnak.datavalue.value;
+                    if (!value) {
+                        return;
+                    }
+
+                    var section = document.createElement('div');
+                    section.className = 'section';
+                    section.innerHTML = '<h2>' + config.label + '</h2>' + config.html(value);
+                    embeds.appendChild(section);
+                    found++;
+                });
+            });
+
+            if (found === 0) {
+                setError('No embeddable properties found for ' + entityId + '.');
+            } else {
+                setStatus('');
+            }
+        })
+        .catch(function (err) {
+            setError('Error fetching data: ' + err);
+        });
+    }
+    </script>
+</body>
+</html>
