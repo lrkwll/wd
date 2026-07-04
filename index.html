@@ -161,7 +161,7 @@
             property: 'P2722',
             label: 'Deezer (artist)',
             html: function (id) {
-                return '<iframe src="https://widget.deezer.com/widget/dark/artist/' + encodeURIComponent(id) + '"' +
+                return '<iframe title="deezer-widget" src="https://widget.deezer.com/widget/auto/artist/' + encodeURIComponent(id) + '/top_tracks" allowtransparency="true" allow="encrypted-media; clipboard-write"></iframe>' +
                     ' width="100%" height="350" frameborder="0"' +
                     ' style="border-radius:10px"' +
                     ' allowfullscreen></iframe>';
