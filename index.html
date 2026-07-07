@@ -77,6 +77,8 @@
     //   property: Wikidata property ID
     //   label: human-readable name shown as a heading
     //   html: function taking the property value, returning embed HTML
+    //   script: (optional) URL of a third-party script to load when this
+    //           embed type is present (loaded once per page, on demand)
     var EMBED_CONFIGS = [
         {
             property: 'P6276',
@@ -89,31 +91,6 @@
                     '\u266a Listen on Amazon Music</a>';
             }
         },
-
-        {
-            property: 'P2281',
-            label: 'Apple Music album',
-            html: function (id) {
-                return '<iframe allow="autoplay *; encrypted-media *; fullscreen *; clipboard-write" frameborder="0" height="450" style="width:100%;max-width:660px;overflow:hidden;border-radius:10px;" sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation-by-user-activation" src="https://embed.music.apple.com/us/album/hello-world/' + encodeURIComponent(id) + '"></iframe>';
-            }
-        },
-
-        {
-            property: 'P11354',
-            label: 'Bandcamp release',
-            html: function (id) {
-                return '<iframe style="border: 0; width: 350px; height: 786px;" src="https://bandcamp.com/EmbeddedPlayer/album=' + encodeURIComponent(id) + '/size=large" seamless></iframe>';
-            }
-        },
-
-        {
-            property: 'P7317',
-            label: 'iHeart artist radio',
-            html: function (id) {
-                return '<iframe allow="autoplay" width="100%" height="200" src="https://www.iheart.com/artist/hello-world-' + encodeURIComponent(id) + '?embed=true" frameborder="0"></iframe>';
-            }
-        },
-
         {
             property: 'P724',
             label: 'Internet Archive',
@@ -123,15 +100,38 @@
                     ' webkitallowfullscreen="true" mozallowfullscreen="true" allowfullscreen></iframe>';
             }
         },
-
         {
-            property: 'P12813',
-            label: 'itch.io',
+            property: 'P2984',
+            label: 'Snapchat',
+            script: 'https://www.snapchat.com/embed.js',
             html: function (id) {
-                return '<iframe frameborder="0" height="167" width="552" src="https://itch.io/embed/' + encodeURIComponent(id) + '"></iframe>';
+                return '<blockquote class="snapchat-embed"' +
+                    ' data-snapchat-embed-width="416"' +
+                    ' data-snapchat-embed-height="692"' +
+                    ' data-snapchat-embed-url="https://www.snapchat.com/@' + id + '/embed"' +
+                    ' data-snapchat-embed-style="border-radius:40px;"' +
+                    ' data-snapchat-embed-title="Snapchat profile"' +
+                    ' style="background:#C4C4C4;border:0;border-radius:40px;' +
+                    'box-shadow:0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15);' +
+                    'margin:1px;max-width:416px;min-width:326px;padding:0;' +
+                    'width:calc(100% - 2px);display:flex;flex-direction:column;' +
+                    'position:relative;height:650px;">' +
+                    '<div style="display:flex;flex-direction:row;align-items:center;">' +
+                    '<a href="https://www.snapchat.com/@' + id + '"' +
+                    ' style="background-color:#F4F4F4;border-radius:50%;flex-grow:0;' +
+                    'height:40px;width:40px;margin:16px;cursor:pointer"></a>' +
+                    '</div>' +
+                    '<div style="flex:1;"></div>' +
+                    '<div style="display:flex;flex-direction:row;align-items:center;' +
+                    'border-end-end-radius:40px;border-end-start-radius:40px;">' +
+                    '<a href="https://www.snapchat.com/@' + id + '"' +
+                    ' style="background-color:yellow;width:100%;padding:10px 20px;' +
+                    'border:none;border-radius:inherit;cursor:pointer;text-align:center;' +
+                    'display:flex;flex-direction:row;justify-content:center;' +
+                    'text-decoration:none;color:black;">View more on Snapchat</a>' +
+                    '</div></blockquote>';
             }
         },
-
         {
             property: 'P3040',
             label: 'SoundCloud',
@@ -145,7 +145,6 @@
                     '</iframe>';
             }
         },
-
         {
             property: 'P1902',
             label: 'Spotify (artist)',
@@ -156,7 +155,6 @@
                     ' allowfullscreen></iframe>';
             }
         },
-
         {
             property: 'P2205',
             label: 'Spotify (album)',
@@ -167,7 +165,6 @@
                     ' allowfullscreen></iframe>';
             }
         },
-
         {
             property: 'P2207',
             label: 'Spotify (track)',
@@ -178,7 +175,6 @@
                     ' allowfullscreen></iframe>';
             }
         },
-
         {
             property: 'P8704',
             label: 'Spotify (playlist)',
@@ -189,7 +185,6 @@
                     ' allowfullscreen></iframe>';
             }
         },
-
         {
             property: 'P5916',
             label: 'Spotify (podcast)',
@@ -200,7 +195,7 @@
                     ' allowfullscreen></iframe>';
             }
         },
-			{
+        {
             property: 'P1733',
             label: 'Steam',
             html: function (id) {
@@ -208,7 +203,7 @@
                     ' frameborder="0" width="646" height="190"></iframe>';
             }
         },
-                {
+        {
             property: 'P2397',
             label: 'YouTube (channel uploads playlist)',
             html: function (id) {
@@ -221,7 +216,6 @@
                     '<div class="watch-link"><a href="' + channelUrl + '" target="_blank">View channel on YouTube</a></div>';
             }
         },
-
         {
             property: 'P1651',
             label: 'YouTube (video)',
@@ -245,6 +239,8 @@
         //             ' width="100%" height="352" frameborder="0"></iframe>';
         //     }
         // },
+        // To load a third-party script required by the embed, add:
+        //     script: 'https://example.com/embed.js',
     ];
     // ------------------------------------
 
@@ -278,8 +274,6 @@
         var claimsUrl = 'https://www.wikidata.org/w/api.php?action=wbgetclaims' +
             '&entity=' + entityId + '&format=json&origin=*';
 
-        // Use separate props values joined by | directly in the string
-        // sitefilter limits sitelinks to enwiki only so we don't get hundreds of sitelinks back
         var entityUrl = 'https://www.wikidata.org/w/api.php?action=wbgetentities' +
             '&ids=' + entityId +
             '&props=labels|sitelinks' +
@@ -346,6 +340,15 @@
                     section.innerHTML = '<h2>' + config.label + '</h2>' + config.html(value);
                     embeds.appendChild(section);
                     found++;
+
+                    // Load any required third-party script for this embed type,
+                    // but only once even if there are multiple values
+                    if (config.script && !document.querySelector('script[src="' + config.script + '"]')) {
+                        var script = document.createElement('script');
+                        script.src = config.script;
+                        script.async = true;
+                        document.body.appendChild(script);
+                    }
                 });
             });
 
